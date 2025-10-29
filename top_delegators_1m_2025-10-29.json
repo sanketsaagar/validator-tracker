@@ -1,0 +1,337 @@
+{
+  "months": 1,
+  "generatedAt": "2025-10-29T06:59:12.625Z",
+  "fromBlock": 23465410,
+  "toBlock": 23681409,
+  "totalDelegationEvents": 2557,
+  "totalUnbondEvents": 838,
+  "topDelegators": [
+    {
+      "rank": 1,
+      "address": "0xb48b2548f51e592f9a402500b811ca230d253f34",
+      "totalDelegated": 19468029.12235226,
+      "totalUnbonded": 581692.89236549,
+      "netStake": 18886336.229986772,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 19468029.12235226,
+          "unbonded": 581692.89236549,
+          "netStake": 18886336.229986772
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "address": "0xbaded9b8ad4a424984dd8c4283225034537d9a84",
+      "totalDelegated": 19453289.85780304,
+      "totalUnbonded": 697767.72262537,
+      "netStake": 18755522.13517767,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 19453289.85780304,
+          "unbonded": 697767.72262537,
+          "netStake": 18755522.13517767
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "address": "0x1723c28d3f377c033b81308913eabacc92809546",
+      "totalDelegated": 19164899.324317746,
+      "totalUnbonded": 546803.61839244,
+      "netStake": 18618095.705925304,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 19164899.324317746,
+          "unbonded": 546803.61839244,
+          "netStake": 18618095.705925304
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "address": "0x0bea2c274d282a7bf2b3fd28dbd68071c1d43941",
+      "totalDelegated": 18959107.490819708,
+      "totalUnbonded": 535734.8926747299,
+      "netStake": 18423372.59814498,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 18959107.490819708,
+          "unbonded": 535734.8926747299,
+          "netStake": 18423372.59814498
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "address": "0x1965f16fa0c3a6bce2c0519b1377925d276b31fd",
+      "totalDelegated": 18968833.05794917,
+      "totalUnbonded": 589014.05238678,
+      "netStake": 18379819.00556239,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 18968833.05794917,
+          "unbonded": 589014.05238678,
+          "netStake": 18379819.00556239
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "address": "0xe89df4f09215de4c076d13549bf901395054696c",
+      "totalDelegated": 19756802.95297809,
+      "totalUnbonded": 1401740.6180484197,
+      "netStake": 18355062.33492967,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 19756802.95297809,
+          "unbonded": 1401740.6180484197,
+          "netStake": 18355062.33492967
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "address": "0x3be128301ac9547591a0f763b870802f73f06ba7",
+      "totalDelegated": 18958369.572541814,
+      "totalUnbonded": 623572.03176314,
+      "netStake": 18334797.540778674,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 18958369.572541814,
+          "unbonded": 623572.03176314,
+          "netStake": 18334797.540778674
+        }
+      ]
+    },
+    {
+      "rank": 8,
+      "address": "0x0de3d23cdf8b9fa5e5bfefd873714cd99aa6be92",
+      "totalDelegated": 18982956.406488307,
+      "totalUnbonded": 880396.63739986,
+      "netStake": 18102559.769088447,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 18982956.406488307,
+          "unbonded": 880396.63739986,
+          "netStake": 18102559.769088447
+        }
+      ]
+    },
+    {
+      "rank": 9,
+      "address": "0x06fa694f927092d9d8df7645290ee204698fbee3",
+      "totalDelegated": 19007334.433201574,
+      "totalUnbonded": 3337260.38464998,
+      "netStake": 15670074.048551593,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 19007334.433201574,
+          "unbonded": 3337260.38464998,
+          "netStake": 15670074.048551593
+        }
+      ]
+    },
+    {
+      "rank": 10,
+      "address": "0x482a2c3040af9f1ca387ea46fa46ddf995df13d4",
+      "totalDelegated": 13561279.286479864,
+      "totalUnbonded": 0,
+      "netStake": 13561279.286479864,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 13561279.286479864,
+          "unbonded": 0,
+          "netStake": 13561279.286479864
+        }
+      ]
+    },
+    {
+      "rank": 11,
+      "address": "0xc86026d620a4b0a5944c964bc7ef4a794132e9a2",
+      "totalDelegated": 10327161.853327056,
+      "totalUnbonded": 0,
+      "netStake": 10327161.853327056,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 10327161.853327056,
+          "unbonded": 0,
+          "netStake": 10327161.853327056
+        }
+      ]
+    },
+    {
+      "rank": 12,
+      "address": "0xf7d1370075beb5297d55db2c53c89684925777fe",
+      "totalDelegated": 10280536.0447592,
+      "totalUnbonded": 0,
+      "netStake": 10280536.0447592,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 10280536.0447592,
+          "unbonded": 0,
+          "netStake": 10280536.0447592
+        }
+      ]
+    },
+    {
+      "rank": 13,
+      "address": "0x82378ae2518085adf82346873af2f62dc0911f5b",
+      "totalDelegated": 10230792.25848554,
+      "totalUnbonded": 0,
+      "netStake": 10230792.25848554,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 10230792.25848554,
+          "unbonded": 0,
+          "netStake": 10230792.25848554
+        }
+      ]
+    },
+    {
+      "rank": 14,
+      "address": "0xa90ce9c1fbcba8887adb04ef0a2da7c33380f6c9",
+      "totalDelegated": 10195596.768895132,
+      "totalUnbonded": 0,
+      "netStake": 10195596.768895132,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 10195596.768895132,
+          "unbonded": 0,
+          "netStake": 10195596.768895132
+        }
+      ]
+    },
+    {
+      "rank": 15,
+      "address": "0x067519127dfa22f0673703300641b390de4965bc",
+      "totalDelegated": 10334987.685395556,
+      "totalUnbonded": 189029.99847428,
+      "netStake": 10145957.686921276,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 10334987.685395556,
+          "unbonded": 189029.99847428,
+          "netStake": 10145957.686921276
+        }
+      ]
+    },
+    {
+      "rank": 16,
+      "address": "0x0529ea5885702715e83923c59746ae8734c553b7",
+      "totalDelegated": 8000000,
+      "totalUnbonded": 0,
+      "netStake": 8000000,
+      "validatorDetails": [
+        {
+          "validatorId": 47,
+          "validatorName": "Kiln x Ownest 🔸 Pro Staking 🔸",
+          "delegated": 8000000,
+          "unbonded": 0,
+          "netStake": 8000000
+        }
+      ]
+    },
+    {
+      "rank": 17,
+      "address": "0xed4f014febd9f1b429ed0986301c5428739e4cec",
+      "totalDelegated": 6680000,
+      "totalUnbonded": 0,
+      "netStake": 6680000,
+      "validatorDetails": [
+        {
+          "validatorId": 163,
+          "validatorName": "Upbit Staking",
+          "delegated": 6680000,
+          "unbonded": 0,
+          "netStake": 6680000
+        }
+      ]
+    },
+    {
+      "rank": 18,
+      "address": "0xeb9431c087565c0d0d55114584eca72ef5c5315d",
+      "totalDelegated": 5319999.999999999,
+      "totalUnbonded": 0,
+      "netStake": 5319999.999999999,
+      "validatorDetails": [
+        {
+          "validatorId": 163,
+          "validatorName": "Upbit Staking",
+          "delegated": 5319999.999999999,
+          "unbonded": 0,
+          "netStake": 5319999.999999999
+        }
+      ]
+    },
+    {
+      "rank": 19,
+      "address": "0x1828ce72d1269ffe25e9873d8ab7efd516b456a5",
+      "totalDelegated": 5200000,
+      "totalUnbonded": 0,
+      "netStake": 5200000,
+      "validatorDetails": [
+        {
+          "validatorId": 163,
+          "validatorName": "Upbit Staking",
+          "delegated": 5200000,
+          "unbonded": 0,
+          "netStake": 5200000
+        }
+      ]
+    },
+    {
+      "rank": 20,
+      "address": "0xac0f2bf932c5f78436bb8495de68d784a07fb3fb",
+      "totalDelegated": 5080000,
+      "totalUnbonded": 0,
+      "netStake": 5080000,
+      "validatorDetails": [
+        {
+          "validatorId": 142,
+          "validatorName": "Coinbase",
+          "delegated": 5080000,
+          "unbonded": 0,
+          "netStake": 5080000
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalDelegators": 20,
+    "totalNetStake": 258546963.26701355,
+    "totalDelegated": 267929976.11579406,
+    "totalUnbonded": 9383012.848780489,
+    "averageNetStake": 12927348.163350677
+  }
+}

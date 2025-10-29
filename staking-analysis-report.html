@@ -1,0 +1,492 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygon Staking/Unstaking Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            color: #8247e5;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #8247e5;
+        }
+        .summary-card.unstaking .value { color: #e74c3c; }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chart-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3em;
+        }
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+        canvas { max-height: 400px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #666;
+        }
+        .amount {
+            font-weight: 600;
+            color: #8247e5;
+        }
+        .section-title {
+            margin: 40px 0 20px;
+            font-size: 1.8em;
+            color: #333;
+            border-bottom: 3px solid #8247e5;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Polygon Staking/Unstaking Analysis</h1>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Staking Period</h3>
+                <div class="value">15/6/2025 - 24/6/2025</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Staked</h3>
+                <div class="value">322.99M POL</div>
+            </div>
+            <div class="summary-card">
+                <h3>Staking Events</h3>
+                <div class="value">843</div>
+            </div>
+            <div class="summary-card">
+                <h3>Unique Stakers</h3>
+                <div class="value">416</div>
+            </div>
+            <div class="summary-card unstaking">
+                <h3>Unstaking Period</h3>
+                <div class="value">23/6/2025 - 2/8/2025</div>
+            </div>
+            <div class="summary-card unstaking">
+                <h3>Total Unstaked</h3>
+                <div class="value">470.48M POL</div>
+            </div>
+            <div class="summary-card unstaking">
+                <h3>Unstaking Events</h3>
+                <div class="value">555</div>
+            </div>
+            <div class="summary-card unstaking">
+                <h3>Unique Unstakers</h3>
+                <div class="value">422</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">🎯 Staking Analysis (June 15-23, 2025)</h2>
+
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h2>Top 15 Validators by Staking Volume</h2>
+                <canvas id="stakingValidatorsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>Staking Events Distribution</h2>
+                <canvas id="stakingEventsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container full-width">
+            <h2>Top 10 Staking Addresses</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Address</th>
+                        <th>Amount Staked</th>
+                        <th>% of Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td>1</td>
+                            <td class="address">0x8287f469726a95dede7cff1ea3b24a34a12e88f0</td>
+                            <td class="amount">140,000,000 POL</td>
+                            <td>43.34%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>2</td>
+                            <td class="address">0xa64b436964e7415c0e70b9989a53e1fb9a90e726</td>
+                            <td class="amount">100,000,000 POL</td>
+                            <td>30.96%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>3</td>
+                            <td class="address">0xf03a7eb46d01d9ecaa104558c732cf82f6b6b645</td>
+                            <td class="amount">20,578,744.03 POL</td>
+                            <td>6.37%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>4</td>
+                            <td class="address">0x0a1d116d7ecacc92a2175d8b7633adef35907d44</td>
+                            <td class="amount">19,999,885.5 POL</td>
+                            <td>6.19%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>5</td>
+                            <td class="address">0xb003d234088dec712a54583f60e73c6188cfd8f0</td>
+                            <td class="amount">3,000,000 POL</td>
+                            <td>0.93%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>6</td>
+                            <td class="address">0x438edd9d650cbdb2a2eb428d2280ff85ffdd31fe</td>
+                            <td class="amount">2,614,098 POL</td>
+                            <td>0.81%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>7</td>
+                            <td class="address">0x4c6452f18d5967f1f7e9884bc5cdfc60452e015a</td>
+                            <td class="amount">2,492,470 POL</td>
+                            <td>0.77%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>8</td>
+                            <td class="address">0x1356aafd5dc82689ca6ee7474acff9796bda2901</td>
+                            <td class="amount">2,481,283.32 POL</td>
+                            <td>0.77%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>9</td>
+                            <td class="address">0xbde492854c33121397f6f39974bac408f305663c</td>
+                            <td class="amount">2,480,000 POL</td>
+                            <td>0.77%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>10</td>
+                            <td class="address">0xec4c2e61c0ea31c25fdd25fc5f50439a3b36a1b5</td>
+                            <td class="amount">2,000,000 POL</td>
+                            <td>0.62%</td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title">🔻 Unstaking Analysis (June 23 - Aug 1, 2025)</h2>
+
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h2>Top 15 Validators by Unstaking Volume</h2>
+                <canvas id="unstakingValidatorsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h2>Unstaking Events Distribution</h2>
+                <canvas id="unstakingEventsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container full-width">
+            <h2>Top 10 Unstaking Addresses</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Address</th>
+                        <th>Amount Unstaked</th>
+                        <th>% of Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td>1</td>
+                            <td class="address">0xf977814e90da44bfa03b6295a0616a897441acec</td>
+                            <td class="amount">310,000,000.6 POL</td>
+                            <td>65.89%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>2</td>
+                            <td class="address">0x83472ca681a2da7196fdb4355b71e530ad9a85fc</td>
+                            <td class="amount">40,000,100 POL</td>
+                            <td>8.50%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>3</td>
+                            <td class="address">0xdeeddf2d1bcb7c73046f6eac5d719e991c6b1982</td>
+                            <td class="amount">20,000,000 POL</td>
+                            <td>4.25%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>4</td>
+                            <td class="address">0xa383b098668f9f1eb39f85d63bfb1eb8193233e0</td>
+                            <td class="amount">16,753,798.45 POL</td>
+                            <td>3.56%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>5</td>
+                            <td class="address">0xa916a54af7553bae6172e510d067826bd204d0dd</td>
+                            <td class="amount">16,544,029.79 POL</td>
+                            <td>3.52%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>6</td>
+                            <td class="address">0xf03a7eb46d01d9ecaa104558c732cf82f6b6b645</td>
+                            <td class="amount">15,092,048.54 POL</td>
+                            <td>3.21%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>7</td>
+                            <td class="address">0x8287f469726a95dede7cff1ea3b24a34a12e88f0</td>
+                            <td class="amount">13,500,000 POL</td>
+                            <td>2.87%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>8</td>
+                            <td class="address">0xb334b6c04d341faace597b6ba1e84fe78bda503b</td>
+                            <td class="amount">6,569,865.95 POL</td>
+                            <td>1.40%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>9</td>
+                            <td class="address">0x951f33a95bfd1ed3964fedf21808a84443cda771</td>
+                            <td class="amount">4,700,000 POL</td>
+                            <td>1.00%</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>10</td>
+                            <td class="address">0x06051836ac6c5112b890f8b6ec78e33d1afeae7c</td>
+                            <td class="amount">3,414,876.48 POL</td>
+                            <td>0.73%</td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <div class="chart-container full-width">
+            <h2>Staking vs Unstaking Comparison</h2>
+            <canvas id="comparisonChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
+        // Staking Validators Chart
+        new Chart(document.getElementById('stakingValidatorsChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Binance Node","Anonymous 93","Anonymous 94","Anonymous 91","Upbit Staking","StakePool","Coinbase","Girnaar Nodes","Anonymous 92","Figment","P2P.org 0% Fee","Web3Nodes Validator 🌎 0% fee","Kraken","Making.cash","Twinstake"],
+                datasets: [{
+                    label: 'Total Staked (POL)',
+                    data: [120783522.79661882,50000144.65951934,50000000,35000000,15200000,15004081.828669012,6090995.153515236,5638406.038047502,5002870.642620322,3228582.3850259604,3160598.529952034,3035495.6947100833,1797953.8231688403,1438992.7587612655,1417720.7553579905],
+                    backgroundColor: 'rgba(130, 71, 229, 0.8)',
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1e6).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Staking Events Chart
+        new Chart(document.getElementById('stakingEventsChart'), {
+            type: 'pie',
+            data: {
+                labels: ["Binance Node","Anonymous 93","Anonymous 94","Anonymous 91","Upbit Staking","StakePool","Coinbase","Girnaar Nodes","Anonymous 92","Figment"],
+                datasets: [{
+                    data: [15,2,1,1,118,17,44,9,8,8],
+                    backgroundColor: [
+                        '#8247e5', '#9b59b6', '#3498db', '#2ecc71', '#f39c12',
+                        '#e74c3c', '#1abc9c', '#34495e', '#e67e22', '#95a5a6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        // Unstaking Validators Chart
+        new Chart(document.getElementById('unstakingValidatorsChart'), {
+            type: 'bar',
+            data: {
+                labels: ["Binance Node","Matic Friends","Figment","Twinstake","Anonymous 94","StakePool","Kraken","StakeCraft 🔥 0% Fee","Pier Two","Blocks United","Pentagon Games","Republic Crypto / Source","Pentagon Chain","DSRV","Shard Labs"],
+                datasets: [{
+                    label: 'Total Unstaked (POL)',
+                    data: [263946658.91863582,50019376.7111813,44528399.66029268,40890047.92482936,21071228.81103426,15781471.306651345,8744026.47972897,2177267.1644350663,1825666.54933645,1557157.2071974208,1517199.1570816152,1504951.3610362972,1504325.3856029308,1502558.6365941616,1501102.36],
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1e6).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Unstaking Events Chart
+        new Chart(document.getElementById('unstakingEventsChart'), {
+            type: 'pie',
+            data: {
+                labels: ["Binance Node","Matic Friends","Figment","Twinstake","Anonymous 94","StakePool","Kraken","StakeCraft 🔥 0% Fee","Pier Two","Blocks United"],
+                datasets: [{
+                    data: [24,5,32,8,4,34,15,7,5,6],
+                    backgroundColor: [
+                        '#e74c3c', '#c0392b', '#e67e22', '#d35400', '#f39c12',
+                        '#f1c40f', '#e8a90c', '#d68910', '#c87f0a', '#ba7506'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        // Comparison Chart
+        new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Total Volume', 'Number of Events', 'Unique Addresses', 'Validators Involved'],
+                datasets: [{
+                    label: 'Staking',
+                    data: [
+                        322.99452848052516,
+                        843,
+                        416,
+                        74
+                    ],
+                    backgroundColor: 'rgba(130, 71, 229, 0.8)',
+                }, {
+                    label: 'Unstaking',
+                    data: [
+                        470.4821522249852,
+                        555,
+                        422,
+                        84
+                    ],
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
