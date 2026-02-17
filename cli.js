@@ -316,6 +316,7 @@ program
                     console.log(`   Validator: ${unbond.validatorName} (ID: ${unbond.validatorId})`);
                     console.log(`   Delegator Address: ${unbond.address}`);
                     console.log(`   Date: ${dateStr}`);
+                    console.log(`   Etherscan: https://etherscan.io/address/${unbond.address}`);
                     console.log(`   Polygonscan: https://polygonscan.com/address/${unbond.address}`);
                     console.log('');
                 });
@@ -431,6 +432,7 @@ program
                     console.log(`${unbond.rank}. ${unbond.amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} POL`);
                     console.log(`   Address: ${unbond.address}`);
                     console.log(`   Date: ${dateStr}`);
+                    console.log(`   Etherscan: https://etherscan.io/address/${unbond.address}`);
                     console.log(`   Polygonscan: https://polygonscan.com/address/${unbond.address}`);
                     console.log('');
                 });
