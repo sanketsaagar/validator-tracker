@@ -1,12 +1,12 @@
 // Load environment variables from .env file if it exists
 require('dotenv').config();
 
-const ValidatorTracker = require('./ValidatorTracker');
-const ChartGenerator = require('./ChartGenerator');
-const FundFlowTracker = require('./FundFlowTracker');
-const DelegatorFilter = require('./DelegatorFilter');
-const MetaSleuthVisualizer = require('./MetaSleuthVisualizer');
-const EthereumDelegationTracker = require('./EthereumDelegationTracker');
+const ValidatorTracker = require('./src/ValidatorTracker');
+const ChartGenerator = require('./src/ChartGenerator');
+const FundFlowTracker = require('./src/FundFlowTracker');
+const DelegatorFilter = require('./src/DelegatorFilter');
+const MetaSleuthVisualizer = require('./src/MetaSleuthVisualizer');
+const EthereumDelegationTracker = require('./src/EthereumDelegationTracker');
 
 // Main entry point for programmatic usage - now focused on individual delegators
 class ValidatorStakeTracker {

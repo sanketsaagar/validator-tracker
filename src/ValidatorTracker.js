@@ -123,6 +123,161 @@ class ValidatorTracker {
     }
   }
 
+  static async fetchRecentDelegations(hours = 48, limit = 50) {
+    try {
+      const now = new Date();
+      const cutoffDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
+      const cutoffTimestamp = Math.floor(cutoffDate.getTime() / 1000);
+
+      console.log(`\nFetching new delegations in the last ${hours} hours...`);
+      console.log(`Time range: ${cutoffDate.toLocaleString()} to ${now.toLocaleString()}`);
+      console.log('⏳ Querying Ethereum for ShareMinted events...\n');
+
+      // Fetch all validators to get names
+      const validators = await ValidatorTracker.fetchAllValidators();
+      if (validators.length === 0) {
+        return [];
+      }
+
+      // Create validator lookup map
+      const validatorMap = {};
+      validators.forEach(v => {
+        validatorMap[v.id] = v.name || `Validator ${v.id}`;
+      });
+
+      const ethereumTracker = new EthereumDelegationTracker();
+
+      // Check if API key is configured
+      if (!ethereumTracker.etherscanApiKey || ethereumTracker.etherscanApiKey === 'YourApiKeyToken') {
+        console.error('❌ ETHERSCAN_API_KEY not configured. This is required to fetch delegation data.');
+        console.error('Please set ETHERSCAN_API_KEY in your .env file or environment variables.');
+        return [];
+      }
+
+      // Get starting block for the time period
+      let fromBlock;
+      try {
+        const response = await axios.get('https://api.etherscan.io/v2/api', {
+          params: {
+            chainid: 1,
+            module: 'block',
+            action: 'getblocknobytime',
+            timestamp: cutoffTimestamp,
+            closest: 'before',
+            apikey: ethereumTracker.etherscanApiKey
+          },
+          timeout: 15000
+        });
+
+        if (response.data.status === '1' && response.data.result) {
+          fromBlock = parseInt(response.data.result, 10);
+        } else {
+          throw new Error(response.data.message || 'Block lookup failed');
+        }
+      } catch (err) {
+        console.warn(`⚠️  Could not get start block, using approximate: ${err.message}`);
+        // Approximate: 12 second blocks
+        const approxBlocks = Math.floor((hours * 3600) / 12);
+        try {
+          const headResponse = await axios.get('https://api.etherscan.io/v2/api', {
+            params: {
+              chainid: 1,
+              module: 'proxy',
+              action: 'eth_blockNumber',
+              apikey: ethereumTracker.etherscanApiKey
+            },
+            timeout: 10000
+          });
+          const currentBlock = parseInt(headResponse.data.result, 16);
+          fromBlock = Math.max(1, currentBlock - approxBlocks);
+        } catch (blockErr) {
+          console.error(`❌ Could not get current block number: ${blockErr.message}`);
+          return [];
+        }
+      }
+
+      console.log(`Querying Ethereum logs from block ${fromBlock} to latest...`);
+
+      // Validate fromBlock
+      if (!fromBlock || fromBlock <= 0) {
+        console.error('❌ Invalid starting block number. Cannot proceed.');
+        return [];
+      }
+
+      // Fetch ALL ShareMinted events in the time period
+      const logsResponse = await axios.get('https://api.etherscan.io/v2/api', {
+        params: {
+          chainid: 1,
+          module: 'logs',
+          action: 'getLogs',
+          address: ethereumTracker.stakingManagerContract,
+          topic0: ethereumTracker.shareMintedTopic,
+          fromBlock: fromBlock,
+          toBlock: 'latest',
+          apikey: ethereumTracker.etherscanApiKey
+        },
+        timeout: 30000
+      });
+
+      if (logsResponse.data.status !== '1') {
+        console.error(`❌ Etherscan API error: ${logsResponse.data.message}`);
+        return [];
+      }
+
+      const events = logsResponse.data.result || [];
+      console.log(`Found ${events.length} raw delegation events on Ethereum`);
+
+      const allDelegations = [];
+
+      // Process delegation events
+      for (const event of events) {
+        try {
+          const validatorId = parseInt(event.topics[1], 16);
+          const user = '0x' + event.topics[2].slice(26);
+          const amount = BigInt(event.data);
+          const amountPol = ValidatorTracker.fromWeiToPolNumberStatic(amount.toString());
+
+          // Parse timestamp from event
+          const timestamp = parseInt(event.timeStamp, 16);
+          const eventDate = new Date(timestamp * 1000);
+
+          // Only include events within our time window
+          if (eventDate >= cutoffDate) {
+            allDelegations.push({
+              validatorId: validatorId,
+              validatorName: validatorMap[validatorId] || `Validator ${validatorId}`,
+              address: user.toLowerCase(),
+              amount: Number(amountPol),
+              date: eventDate,
+              timestamp: timestamp,
+              transactionHash: event.transactionHash,
+              blockNumber: parseInt(event.blockNumber, 16)
+            });
+          }
+        } catch (err) {
+          // Skip invalid events
+          console.warn(`⚠️  Error processing event: ${err.message}`);
+        }
+      }
+
+      // Sort by date (most recent first)
+      allDelegations.sort((a, b) => b.date - a.date);
+
+      // Apply limit and add rank
+      const topDelegations = allDelegations.slice(0, limit).map((d, index) => ({
+        ...d,
+        rank: index + 1
+      }));
+
+      console.log(`Processed ${topDelegations.length} delegation events in the time period\n`);
+      return topDelegations;
+
+    } catch (error) {
+      console.error(`❌ Error fetching recent delegations: ${error.message}`);
+      return [];
+    }
+  }
+
   static async fetchAllDelegatorsAcrossValidators(months = 6, limit = 100) {
     try {
       console.log(`\nFetching delegations across all validators (last ${months} month(s))...`);

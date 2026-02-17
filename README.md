@@ -1,262 +1,395 @@
-# Individual Delegator Stake Tracker
+# Polygon Validator Stake Tracker
 
-A tool focused on tracking individual delegators on Polygon staking, filtering out exchanges and DeFi protocols, with integrated MetaSleuth visualization for fund flow analysis.
+> Track validator staking activity on Polygon with detailed reports on delegations, unbonds, and top stakers. Run analysis via CLI or GitHub Actions.
+
+## 📋 Table of Contents
+- [What is This?](#what-is-this)
+- [Key Features](#key-features)
+- [Quick Start](#quick-start)
+- [CLI Commands](#cli-commands)
+- [GitHub Actions Guide](#github-actions-guide)
+- [Project Structure](#project-structure)
+- [Examples](#examples)
+
+## What is This?
+
+A tool to monitor Polygon validator staking activity:
+- **Track new delegators** - See who staked in the last X hours
+- **Monitor unbonds** - Find large unstaking events
+- **Analyze top stakers** - Report on biggest delegators across all validators
+- **Filter intelligently** - Automatically exclude exchanges & DeFi protocols
+- **Export data** - All results exportable to JSON
 
 ## 🎯 Key Features
 
-- **Individual Delegator Focus**: Automatically filters out exchanges, DeFi protocols, and institutional addresses
-- **MetaSleuth Integration**: Generate visual fund flow graphs for delegator addresses  
-- **Comprehensive Filtering**: Uses extensive database of known exchange/DeFi addresses plus MetaSleuth API
-- **Visual Analysis**: Direct links to MetaSleuth for interactive fund flow visualization
-- **Actionable Insights**: Clear recommendations based on fund flow patterns
-- **CLI Interface**: Easy-to-use commands focused on delegator tracking
-- **Data Export**: Comprehensive reports with filtering statistics
+- 🆕 **New Delegations Tracking** - Monitor new stakers (24-168 hours)
+- 📊 **Unbonding Analysis** - Track large unstaking across all validators
+- 👥 **Top Delegators Reports** - Find biggest stakers
+- 🤖 **GitHub Actions** - Run reports manually via workflows (no cron)
+- 🔍 **Smart Filtering** - Excludes exchanges & DeFi automatically
+- 💾 **Data Export** - JSON export for all reports
+- 📈 **Fund Flow Analysis** - MetaSleuth integration
 
-## Installation
+## 🚀 Quick Start
+
+### 1. Installation
 
 ```bash
-# Clone or download the project
+git clone https://github.com/YOUR_USERNAME/validator-stake-tracker.git
 cd validator-stake-tracker
-
-# Install dependencies
 npm install
-
-# Make CLI executable (optional)
-npm link
 ```
 
-## Setup
+### 2. Setup API Keys
 
-### API Keys (Optional but Recommended)
-
-Set these environment variables for enhanced functionality:
+Create a `.env` file in the project root:
 
 ```bash
-export POLYGONSCAN_API_KEY="your_polygonscan_api_key"
-export ETHERSCAN_API_KEY="your_etherscan_api_key"
-export METASLEUTH_API_KEY="your_metasleuth_api_key"
+ETHERSCAN_API_KEY=your_etherscan_key_here
+POLYGONSCAN_API_KEY=your_polygonscan_key_here
 ```
 
-Get API keys from:
-- [PolygonScan](https://polygonscan.com/apis) - For transaction data
-- [Etherscan](https://etherscan.io/apis) - For additional Ethereum data
-- [MetaSleuth](https://metasleuth.io/api-service) - For enhanced address labeling (300M+ labels)
+**Get free API keys:**
+- [Etherscan API](https://etherscan.io/apis) - **Required** for delegation data (delegations happen on Ethereum)
+- [PolygonScan API](https://polygonscan.com/apis) - For unbond data
 
-## Usage
+### 3. Run Your First Command
 
-### Command Line Interface
-
-#### Basic Validator Analysis
 ```bash
-# Analyze validator 27 for the last 6 months
-npx track-validator analyze 27
-
-# Analyze for specific time period
-npx track-validator analyze 27 --months 3
-
-# Skip chart generation
-npx track-validator analyze 27 --no-charts
+# Check who delegated in the last 48 hours
+npx track-validator new-delegations --hours 48
 ```
 
-#### Fund Flow Analysis
+## 🛠️ CLI Commands
+
+### View All Commands
 ```bash
-# Analyze specific addresses
-npx track-validator flow-analysis 0x123... 0x456... 0x789...
-
-# Set minimum tracking threshold
-npx track-validator flow-analysis 0x123... --threshold 50
+npx track-validator --help
 ```
 
-#### Combined Analysis (Recommended)
+### 1. Check New Delegations
+
+Track who delegated POL to validators in a specific time period.
+
 ```bash
-# Complete analysis with visualizations and fund tracking
-npx track-validator combined 27
+# Last 48 hours (default)
+npx track-validator new-delegations
 
-# Customize parameters
-npx track-validator combined 27 --months 3 --threshold 100 --top-addresses 5
+# Custom time period
+npx track-validator new-delegations --hours 24
+
+# Show more results and export to JSON
+npx track-validator new-delegations --hours 72 --top 100 --export
 ```
 
-#### Setup Help
+**What you get:**
+- Delegator wallet addresses
+- Validator name & ID
+- Amount delegated (POL)
+- Transaction timestamp
+- Etherscan transaction links
+
+### 2. Check Biggest Unbonds
+
+Find the largest unstaking transactions.
+
 ```bash
-npx track-validator setup
+# All validators, last 7 days
+npx track-validator biggest-unbonds
+
+# Specific validator
+npx track-validator biggest-unbonds 142 --days 14
+
+# Export to JSON
+npx track-validator biggest-unbonds --days 30 --top 100 --export
 ```
 
-### Programmatic Usage
+**What you get:**
+- Unbond amounts
+- Validator details
+- Delegator addresses
+- Summary statistics
+
+### 3. Top Delegators
+
+Get a report of the biggest stakers across all validators.
+
+```bash
+# Top 100 by net stake (last 6 months)
+npx track-validator biggest-delegators
+
+# Custom parameters
+npx track-validator biggest-delegators --months 3 --top 50 --export
+```
+
+**What you get:**
+- Net stake per address
+- Validator distribution
+- Delegation & unbond totals
+- Ranking
+
+### 4. Analyze Specific Validator
+
+Deep-dive analysis of a single validator.
+
+```bash
+# Basic analysis
+npx track-validator analyze 142 --months 6
+
+# Complete analysis with charts and fund flows
+npx track-validator combined 142 --with-visualizations
+```
+
+## 🤖 GitHub Actions Guide
+
+Run reports directly on GitHub without installing anything locally!
+
+### How GitHub Actions Work
+
+1. **Fork this repository** to your GitHub account
+2. **Add API keys** as GitHub secrets
+3. **Click "Run workflow"** from the Actions tab
+4. **Download results** as JSON artifacts
+
+### Setting Up GitHub Actions
+
+#### Step 1: Fork the Repository
+Click the "Fork" button at the top of this repository.
+
+#### Step 2: Add API Keys as Secrets
+
+1. Go to your forked repo
+2. Click **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Add these two secrets:
+
+| Secret Name | Value |
+|------------|-------|
+| `ETHERSCAN_API_KEY` | Your Etherscan API key |
+| `POLYGONSCAN_API_KEY` | Your PolygonScan API key |
+
+![Add Secret Screenshot](https://docs.github.com/assets/cb-48657/images/help/repository/add-repository-secret.png)
+
+#### Step 3: Run a Workflow
+
+1. Go to the **Actions** tab in your forked repo
+2. Select a workflow from the left sidebar
+3. Click **Run workflow** (green button on the right)
+4. Fill in parameters or use defaults
+5. Click **Run workflow**
+
+### Available Workflows
+
+#### 🆕 Check New Delegations
+
+**What it does:** Finds all new delegators in a specified time period
+
+**How to run:**
+1. Actions → **Check New Delegations**
+2. Click **Run workflow**
+3. Set parameters:
+   - **Hours**: How far back to look (default: 48)
+   - **Top**: Number of results (default: 50)
+4. Click **Run workflow**
+
+**Results:** Download JSON artifact with full report
+
+**Example output:**
+```
+10 NEW DELEGATIONS (Last 48 hours)
+1. 64,625.17 POL → Everstake 0% fee
+2. 40,000 POL → Upbit Staking
+3. 27,075.86 POL → Allnodes
+...
+```
+
+#### 📊 Check Biggest Unbonds
+
+**What it does:** Tracks the largest unstaking transactions
+
+**How to run:**
+1. Actions → **Check Biggest Unbonds**
+2. Click **Run workflow**
+3. Set parameters:
+   - **Days**: Time period (default: 7)
+   - **Top**: Number of results (default: 50)
+4. Click **Run workflow**
+
+**Results:** JSON artifact with unbond details
+
+**Use case:** Monitor potential sell pressure from large unbonds
+
+#### 👥 Top Delegators Report
+
+**What it does:** Generates a report of the biggest stakers
+
+**How to run:**
+1. Actions → **Top Delegators Report**
+2. Click **Run workflow**
+3. Set parameters:
+   - **Months**: Analysis period (default: 6)
+   - **Top**: Number of delegators (default: 100)
+4. Click **Run workflow**
+
+**Results:** Comprehensive report of top stakers
+
+**Note:** This can take 10-20 minutes as it queries Ethereum
+
+#### 🔍 Analyze Specific Validator
+
+**What it does:** Deep-dive analysis of a single validator
+
+**How to run:**
+1. Actions → **Analyze Specific Validator**
+2. Click **Run workflow**
+3. Enter **Validator ID** (required)
+4. Set **Months** (default: 6)
+5. Click **Run workflow**
+
+**Results:** Full validator analysis with charts
+
+### Downloading Results
+
+After a workflow completes:
+
+1. Click on the workflow run
+2. Scroll down to **Artifacts**
+3. Click to download the JSON file
+4. Open in any text editor or JSON viewer
+
+### Workflow Run Times
+
+| Workflow | Typical Duration |
+|----------|-----------------|
+| New Delegations | 1-2 minutes |
+| Biggest Unbonds | 3-5 minutes |
+| Top Delegators | 10-20 minutes |
+| Validator Analysis | 2-5 minutes |
+
+### Important Notes
+
+- ✅ All workflows are **manual-only** (no automatic schedules)
+- ✅ Results saved as artifacts for 30-90 days
+- ✅ Free to run on GitHub's infrastructure
+- ✅ No server or hosting costs
+- ⚠️ Must add API keys as secrets first
+
+## 📁 Project Structure
+
+```
+validator-stake-tracker/
+├── .github/workflows/       # GitHub Actions (4 manual workflows)
+│   ├── new-delegations.yml
+│   ├── biggest-unbonds.yml
+│   ├── top-delegators.yml
+│   └── validator-analysis.yml
+├── src/                     # Core library modules
+│   ├── ValidatorTracker.js
+│   ├── EthereumDelegationTracker.js
+│   ├── DelegatorFilter.js
+│   ├── FundFlowTracker.js
+│   ├── ChartGenerator.js
+│   └── MetaSleuthVisualizer.js
+├── scripts/                 # Utility scripts
+├── tests/                   # Test files
+├── cli.js                   # Main CLI interface
+├── index.js                 # Programmatic API
+├── package.json             # Dependencies
+└── README.md                # This file
+```
+
+## 📊 Examples
+
+### Example 1: Find New Delegations Today
+
+```bash
+npx track-validator new-delegations --hours 24
+```
+
+**Output:**
+```
+5 NEW DELEGATIONS (Last 24 hours)
+ACROSS ALL VALIDATORS
+
+1. 64,625.17 POL
+   Validator: Everstake 0% fee (ID: 77)
+   Delegator: 0xefc91acc...
+   Date: Feb 17, 2026, 04:58 AM UTC
+   Etherscan TX: https://etherscan.io/tx/0x97ae9...
+
+SUMMARY:
+Total Delegations: 5
+Total Amount: 166,360.69 POL
+Unique Validators: 4
+Unique Delegators: 3
+```
+
+### Example 2: Monitor Large Unbonds
+
+```bash
+npx track-validator biggest-unbonds --days 7 --top 20
+```
+
+**Use case:** Track potential sell pressure from large unstaking events
+
+### Example 3: Analyze a Validator
+
+```bash
+npx track-validator analyze 142 --months 3
+```
+
+**What you get:**
+- Total delegations & unbonds
+- Net stake change
+- Individual delegator addresses
+- Activity timeline
+
+## 🔧 Programmatic Usage
+
+Use as a library in your own Node.js projects:
 
 ```javascript
 const { ValidatorStakeTracker } = require('./index');
 
 async function analyzeValidator() {
-    const tracker = new ValidatorStakeTracker(27, {
-        months: 6,
-        generateCharts: true,
-        outputDir: './my-analysis'
-    });
-    
-    const results = await tracker.runCompleteAnalysis();
-    console.log('Analysis completed:', results);
+  const tracker = new ValidatorStakeTracker(142, {
+    months: 6,
+    generateCharts: true,
+    filterExchanges: true  // Exclude exchange addresses
+  });
+
+  const results = await tracker.runCompleteAnalysis();
+  console.log('Net stake change:', results.validatorAnalysis.netChange);
+  console.log('Individual delegators:', results.delegatorAddresses.length);
 }
 
 analyzeValidator();
 ```
 
-### Individual Modules
+## 🤝 Contributing
 
-```javascript
-const ValidatorTracker = require('./ValidatorTracker');
-const ChartGenerator = require('./ChartGenerator');
-const FundFlowTracker = require('./FundFlowTracker');
-
-// Use individual components
-const tracker = new ValidatorTracker(27, 6);
-await tracker.runFullAnalysis();
-
-const chartGen = new ChartGenerator();
-await chartGen.generateAllCharts(tracker);
-
-const flowTracker = new FundFlowTracker();
-const report = await flowTracker.generateFlowReport(['0x123...']);
-```
-
-## Output Files
-
-The tool generates several output files:
-
-### Data Files
-- `validator_[ID]_data_[timestamp].json` - Raw analysis data
-- `fund_flow_report_[timestamp].json` - Fund flow analysis
-
-### Charts (PNG files)
-- `stake_analysis.png` - Cumulative stake changes over time
-- `delegation_vs_unbonding.png` - Summary bar chart
-- `top_addresses.png` - Top unbonding addresses (doughnut chart)
-- `activity_timeline.png` - Daily activity histogram
-
-## API Integration
-
-### Current Integrations
-- **Polygon Staking API**: Validator data, delegations, unbonding events
-- **PolygonScan API**: Transaction tracking and fund flow analysis
-- **MetaSleuth API**: Enhanced address labeling with 300M+ address database
-
-### Planned Integrations
-- **Dedaub**: Enhanced address classification and risk analysis
-
-## Example Output
-
-```
-🔍 Analyzing Validator 27 (last 6 months)
-============================================================
-
-📊 STAKE ANALYSIS SUMMARY
-============================================================
-Current Stake: 1,234,567 POL
-Total Delegated: 456,789 POL (123 events)
-Total Unbonded: 234,567 POL (89 events)
-Net Change: +222,222 POL
-Percentage Change: +18.0234%
-
-👥 TOP UNBONDING ADDRESSES:
- 1. 0x1234...5678: 45,678 POL
- 2. 0xabcd...efgh: 23,456 POL
- 3. 0x9876...5432: 12,345 POL
-
-💸 FUND FLOW ANALYSIS SUMMARY
-============================================================
-Total Tracked Outflows: 123,456 POL
-Risk Assessment: MEDIUM - Significant exchange deposits
-
-📊 Destination Breakdown:
-  Exchange: 67,890 POL (55.0%) - 23 transactions
-  Defi: 34,567 POL (28.0%) - 15 transactions
-  Unknown: 20,999 POL (17.0%) - 8 transactions
-```
-
-## Configuration
-
-### Known Addresses
-
-The tool includes a database of known addresses for classification:
-
-```javascript
-// Add to FundFlowTracker.js
-this.knownAddresses = {
-    '0x5e3346444010135322268a0ca24b70e5b1d0d52a': { type: 'exchange', name: 'Binance' },
-    '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': { type: 'defi', name: 'Aave POL' },
-    // Add more addresses as needed
-};
-```
-
-## Extending the Tool
-
-### Adding New APIs
-
-1. Create a new method in `FundFlowTracker.js`:
-```javascript
-async getCustomAPIData(address) {
-    // Your API integration here
-    return analysisData;
-}
-```
-
-2. Update the classification logic:
-```javascript
-classifyAddress(address) {
-    // Enhanced classification logic
-}
-```
-
-### Custom Visualizations
-
-1. Add new chart methods to `ChartGenerator.js`:
-```javascript
-async createMyCustomChart(tracker, outputPath) {
-    // Chart.js configuration
-}
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **API Rate Limits**: The tool includes delays between API calls. Increase `requestDelay` if needed.
-
-2. **Missing Charts**: Ensure chart.js dependencies are installed:
-   ```bash
-   npm install chart.js chartjs-node-canvas
-   ```
-
-3. **No Fund Flow Data**: 
-   - Check API keys are set correctly
-   - Verify addresses have recent transactions
-   - Check rate limiting isn't too aggressive
-
-### Debug Mode
-
-Set environment variable for verbose logging:
-```bash
-DEBUG=true npx track-validator analyze 27
-```
-
-## Contributing
+Contributions welcome! To contribute:
 
 1. Fork the repository
-2. Create a feature branch
-3. Add your enhancements
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-MIT License - feel free to use and modify as needed.
+MIT License - feel free to use this project for any purpose.
 
-## Support
+## 🆘 Support & Issues
 
-For issues or questions:
-1. Check the troubleshooting section
-2. Review the example usage
-3. Open an issue with detailed information about your use case
+- **Bug reports**: [Open an issue](https://github.com/YOUR_USERNAME/validator-stake-tracker/issues)
+- **Feature requests**: [Open an issue](https://github.com/YOUR_USERNAME/validator-stake-tracker/issues) with `enhancement` label
+- **Questions**: Check existing issues or open a new one
+
+## 🌟 Star This Repo
+
+If you find this tool useful, please give it a ⭐ on GitHub!
 
 ---
 
-**Note**: This tool is for analysis purposes only. Always verify critical data through multiple sources.
+**Built for the Polygon ecosystem** 🟣 | **Maintained with ❤️**

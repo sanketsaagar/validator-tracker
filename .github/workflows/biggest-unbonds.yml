@@ -1,0 +1,47 @@
+name: Check Biggest Unbonds
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Number of days to look back'
+        required: false
+        default: '7'
+      top:
+        description: 'Number of top unbonds to show'
+        required: false
+        default: '50'
+
+jobs:
+  check-unbonds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check biggest unbonds
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+        run: |
+          DAYS=${{ github.event.inputs.days || '7' }}
+          TOP=${{ github.event.inputs.top || '50' }}
+          node cli.js biggest-unbonds --days $DAYS --top $TOP --export
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: biggest-unbonds-report
+          path: biggest_unbonds_*.json
+          retention-days: 30

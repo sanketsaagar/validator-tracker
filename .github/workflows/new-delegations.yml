@@ -1,0 +1,46 @@
+name: Check New Delegations
+
+on:
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: 'Number of hours to look back'
+        required: false
+        default: '48'
+      top:
+        description: 'Number of top delegations to show'
+        required: false
+        default: '50'
+
+jobs:
+  check-delegations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check new delegations
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        run: |
+          HOURS=${{ github.event.inputs.hours || '48' }}
+          TOP=${{ github.event.inputs.top || '50' }}
+          node cli.js new-delegations --hours $HOURS --top $TOP --export
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: new-delegations-report
+          path: new_delegations_*.json
+          retention-days: 30

@@ -4,9 +4,9 @@
 require('dotenv').config();
 
 const { program } = require('commander');
-const ValidatorTracker = require('./ValidatorTracker');
-const ChartGenerator = require('./ChartGenerator');
-const FundFlowTracker = require('./FundFlowTracker');
+const ValidatorTracker = require('./src/ValidatorTracker');
+const ChartGenerator = require('./src/ChartGenerator');
+const FundFlowTracker = require('./src/FundFlowTracker');
 
 // --- COMPAT SHIM: add getUnbondWalletAddresses() if ValidatorTracker lacks it
 if (typeof ValidatorTracker?.prototype?.getUnbondWalletAddresses !== 'function') {
@@ -608,6 +608,139 @@ program
 
         } catch (error) {
             console.error(`❌ Error during analysis: ${error.message}`);
+            console.error(error.stack);
+            process.exit(1);
+        }
+    });
+
+program
+    .command('new-delegations')
+    .description('Find new delegators who staked in the last X hours')
+    .option('-h, --hours <number>', 'Number of hours to look back (default: 48 hours)', '48')
+    .option('-t, --top <number>', 'Number of top delegations to show', '50')
+    .option('--export', 'Export results to JSON file')
+    .action(async (options) => {
+        try {
+            const hours = parseInt(options.hours);
+            const top = parseInt(options.top);
+
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`FINDING NEW DELEGATIONS IN THE LAST ${hours} HOURS`);
+            console.log(`${'='.repeat(80)}`);
+            console.log(`Searching across ALL Polygon validators`);
+            console.log(`⏳ Querying Ethereum mainnet for ShareMinted events...\n`);
+
+            // Fetch recent delegations
+            const recentDelegations = await ValidatorTracker.fetchRecentDelegations(hours, top);
+
+            if (recentDelegations.length === 0) {
+                console.log(`\n❌ No new delegations found in the last ${hours} hours`);
+                console.log(`\nNote: Delegations happen on Ethereum mainnet. Make sure ETHERSCAN_API_KEY is set.`);
+                return;
+            }
+
+            // Display results
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`${recentDelegations.length} NEW DELEGATIONS (Last ${hours} hours)`);
+            console.log(`ACROSS ALL VALIDATORS`);
+            console.log(`${'='.repeat(80)}\n`);
+
+            recentDelegations.forEach((delegation) => {
+                const dateStr = delegation.date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'UTC',
+                    timeZoneName: 'short'
+                });
+
+                console.log(`${delegation.rank}. ${delegation.amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} POL`);
+                console.log(`   Validator: ${delegation.validatorName} (ID: ${delegation.validatorId})`);
+                console.log(`   Delegator Address: ${delegation.address}`);
+                console.log(`   Date: ${dateStr}`);
+                console.log(`   Etherscan TX: https://etherscan.io/tx/${delegation.transactionHash}`);
+                console.log(`   Address Info: https://etherscan.io/address/${delegation.address}`);
+                console.log('');
+            });
+
+            // Summary statistics
+            const totalAmount = recentDelegations.reduce((sum, d) => sum + d.amount, 0);
+            const uniqueValidators = new Set(recentDelegations.map(d => d.validatorId)).size;
+            const uniqueDelegators = new Set(recentDelegations.map(d => d.address.toLowerCase())).size;
+            const averageAmount = recentDelegations.length > 0 ? totalAmount / recentDelegations.length : 0;
+
+            // Get validator breakdown
+            const validatorBreakdown = {};
+            recentDelegations.forEach(delegation => {
+                const key = `${delegation.validatorName} (ID: ${delegation.validatorId})`;
+                if (!validatorBreakdown[key]) {
+                    validatorBreakdown[key] = {
+                        count: 0,
+                        totalAmount: 0
+                    };
+                }
+                validatorBreakdown[key].count++;
+                validatorBreakdown[key].totalAmount += delegation.amount;
+            });
+
+            // Sort validators by total amount
+            const sortedValidators = Object.entries(validatorBreakdown)
+                .sort((a, b) => b[1].totalAmount - a[1].totalAmount)
+                .slice(0, 10); // Top 10 validators
+
+            console.log(`${'='.repeat(80)}`);
+            console.log(`SUMMARY`);
+            console.log(`${'='.repeat(80)}`);
+            console.log(`Total New Delegations: ${recentDelegations.length.toLocaleString()}`);
+            console.log(`Total Amount Delegated: ${totalAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })} POL`);
+            console.log(`Unique Validators: ${uniqueValidators}`);
+            console.log(`Unique Delegators: ${uniqueDelegators}`);
+            console.log(`Average Delegation: ${averageAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })} POL\n`);
+
+            console.log(`${'='.repeat(80)}`);
+            console.log(`TOP VALIDATORS BY NEW DELEGATION AMOUNT`);
+            console.log(`${'='.repeat(80)}`);
+            sortedValidators.forEach(([name, data], index) => {
+                console.log(`${(index + 1).toString().padStart(2)}. ${name}`);
+                console.log(`    Total Delegated: ${data.totalAmount.toLocaleString('en-US', { maximumFractionDigits: 2 })} POL`);
+                console.log(`    Number of Delegations: ${data.count}`);
+                console.log(`    Percentage of Total: ${((data.totalAmount / totalAmount) * 100).toFixed(2)}%\n`);
+            });
+
+            // Export if requested
+            if (options.export) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `new_delegations_${hours}h_${timestamp}.json`;
+                const fs = require('fs-extra');
+                await fs.writeJSON(filename, {
+                    hours,
+                    generatedAt: new Date().toISOString(),
+                    newDelegations: recentDelegations,
+                    summary: {
+                        totalDelegations: recentDelegations.length,
+                        totalAmount,
+                        uniqueValidators,
+                        uniqueDelegators,
+                        averageDelegation: averageAmount
+                    },
+                    topValidatorsByDelegation: sortedValidators.map(([name, data]) => ({
+                        validator: name,
+                        delegationCount: data.count,
+                        totalAmount: data.totalAmount,
+                        percentage: ((data.totalAmount / totalAmount) * 100).toFixed(2) + '%'
+                    }))
+                }, { spaces: 2 });
+                console.log(`\n📄 Results exported to: ${filename}`);
+            }
+
+            console.log('\n✅ Analysis completed!');
+            console.log('\n💡 TIP: Use these delegator addresses with the "delegator-tracking" command');
+            console.log('   to analyze their fund flows and staking behavior.');
+
+        } catch (error) {
+            console.error(`❌ Error fetching new delegations: ${error.message}`);
             console.error(error.stack);
             process.exit(1);
         }

@@ -22,6 +22,7 @@ yarn-error.log*
 # Dependency folders
 node_modules/
 vendor/
+package-lock.json
 
 # Build output
 dist/
@@ -35,3 +36,28 @@ coverage/
 *.tmp
 *.orig
 *.old
+
+# Output directories
+output/
+data/*.json
+charts_*/
+
+# Generated data files (outputs from scripts)
+# Keep package.json but ignore data JSONs
+*.json
+!package.json
+!tsconfig.json
+
+# Generated charts and PDFs
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Deployment
+page/
+deploy/
+
+# Keep structure files
+!data/.gitkeep
+!output/.gitkeep
