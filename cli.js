@@ -749,6 +749,140 @@ program
     });
 
 program
+    .command('validator-activity')
+    .description('Show stakes and unbonds for a validator in the last X hours')
+    .argument('<validator-id>', 'Validator ID to analyze')
+    .option('-h, --hours <number>', 'Number of hours to look back (default: 24)', '24')
+    .option('--export', 'Export results to JSON file')
+    .action(async (validatorId, options) => {
+        try {
+            const hours = parseInt(options.hours);
+            const vid = parseInt(validatorId);
+
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`VALIDATOR ${vid} ACTIVITY - LAST ${hours} HOURS`);
+            console.log(`${'='.repeat(80)}\n`);
+
+            const cutoffDate = new Date();
+            cutoffDate.setHours(cutoffDate.getHours() - hours);
+
+            console.log(`Time period: ${cutoffDate.toLocaleString()} to ${new Date().toLocaleString()}`);
+            console.log(`⏳ Fetching data...\n`);
+
+            // Create tracker
+            const tracker = new ValidatorTracker(vid, 1); // 1 month to ensure we get recent data
+
+            // Fetch validator info
+            await tracker.fetchValidatorInfo();
+            console.log(`Validator: ${tracker.validatorInfo.name || `Validator ${vid}`}`);
+            console.log(`Total Stake: ${tracker.validatorInfo.totalStaked?.toLocaleString() || 'N/A'} POL\n`);
+
+            // Fetch delegations and unbonds
+            await tracker.fetchDelegations();
+            await tracker.fetchUnbonds();
+
+            // Filter by time period
+            const recentDelegations = tracker.delegationData.filter(d => d.parsedTime >= cutoffDate);
+            const recentUnbonds = tracker.unbondData.filter(u => u.parsedTime >= cutoffDate);
+
+            // Display delegations
+            console.log(`${'='.repeat(80)}`);
+            console.log(`NEW DELEGATIONS (${recentDelegations.length} events)`);
+            console.log(`${'='.repeat(80)}\n`);
+
+            if (recentDelegations.length > 0) {
+                let totalDelegated = 0;
+                recentDelegations.forEach((d, idx) => {
+                    const dateStr = d.parsedTime.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    console.log(`${idx + 1}. ${d.amountPol.toLocaleString()} POL - ${d.delegator}`);
+                    console.log(`   Date: ${dateStr}`);
+                    if (d.transactionHash) {
+                        console.log(`   TX: https://etherscan.io/tx/${d.transactionHash}`);
+                    }
+                    console.log('');
+                    totalDelegated += d.amountPol;
+                });
+                console.log(`Total Delegated: ${totalDelegated.toLocaleString()} POL\n`);
+            } else {
+                console.log(`No delegations in the last ${hours} hours\n`);
+            }
+
+            // Display unbonds
+            console.log(`${'='.repeat(80)}`);
+            console.log(`UNBONDS (${recentUnbonds.length} events)`);
+            console.log(`${'='.repeat(80)}\n`);
+
+            if (recentUnbonds.length > 0) {
+                let totalUnbonded = 0;
+                recentUnbonds.forEach((u, idx) => {
+                    const dateStr = u.parsedTime.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    console.log(`${idx + 1}. ${u.amountPol.toLocaleString()} POL - ${u.user}`);
+                    console.log(`   Date: ${dateStr}`);
+                    console.log(`   Etherscan: https://etherscan.io/address/${u.user}`);
+                    console.log(`   Polygonscan: https://polygonscan.com/address/${u.user}`);
+                    console.log('');
+                    totalUnbonded += u.amountPol;
+                });
+                console.log(`Total Unbonded: ${totalUnbonded.toLocaleString()} POL\n`);
+            } else {
+                console.log(`No unbonds in the last ${hours} hours\n`);
+            }
+
+            // Summary
+            console.log(`${'='.repeat(80)}`);
+            console.log(`SUMMARY`);
+            console.log(`${'='.repeat(80)}`);
+            console.log(`Delegations: ${recentDelegations.length} events`);
+            console.log(`Unbonds: ${recentUnbonds.length} events`);
+            const netChange = recentDelegations.reduce((sum, d) => sum + d.amountPol, 0) -
+                             recentUnbonds.reduce((sum, u) => sum + u.amountPol, 0);
+            console.log(`Net Change: ${netChange.toLocaleString()} POL\n`);
+
+            // Export if requested
+            if (options.export) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `validator_${vid}_activity_${hours}h_${timestamp}.json`;
+                const fs = require('fs-extra');
+                await fs.writeJSON(filename, {
+                    validatorId: vid,
+                    validatorName: tracker.validatorInfo.name,
+                    hours,
+                    period: {
+                        from: cutoffDate.toISOString(),
+                        to: new Date().toISOString()
+                    },
+                    delegations: recentDelegations,
+                    unbonds: recentUnbonds,
+                    summary: {
+                        delegationCount: recentDelegations.length,
+                        unbondCount: recentUnbonds.length,
+                        totalDelegated: recentDelegations.reduce((sum, d) => sum + d.amountPol, 0),
+                        totalUnbonded: recentUnbonds.reduce((sum, u) => sum + u.amountPol, 0),
+                        netChange
+                    }
+                }, { spaces: 2 });
+                console.log(`📄 Exported to: ${filename}\n`);
+            }
+
+            console.log('✅ Analysis completed!');
+
+        } catch (error) {
+            console.error(`❌ Error: ${error.message}`);
+            process.exit(1);
+        }
+    });
+
+program
     .command('setup')
     .description('Setup environment and install dependencies')
     .action(async () => {
